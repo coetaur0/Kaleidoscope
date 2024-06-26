@@ -1,0 +1,13 @@
+# .NET
+bin/
+obj/
+/packages/
+
+# IDE
+.idea
+riderModule.iml
+/_ReSharper.Caches/
+*.user
+
+# macOS
+.DS_Store

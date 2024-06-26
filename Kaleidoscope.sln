@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kaleidoscope", "Kaleidoscope\Kaleidoscope.csproj", "{ADA2CFA8-8799-42F1-A25C-CBE578CCE7E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kaleidoscope.Tests", "Kaleidoscope.Tests\Kaleidoscope.Tests.csproj", "{59178094-A527-484C-B905-034DC6039ABF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ADA2CFA8-8799-42F1-A25C-CBE578CCE7E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADA2CFA8-8799-42F1-A25C-CBE578CCE7E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADA2CFA8-8799-42F1-A25C-CBE578CCE7E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADA2CFA8-8799-42F1-A25C-CBE578CCE7E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59178094-A527-484C-B905-034DC6039ABF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59178094-A527-484C-B905-034DC6039ABF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59178094-A527-484C-B905-034DC6039ABF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59178094-A527-484C-B905-034DC6039ABF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
