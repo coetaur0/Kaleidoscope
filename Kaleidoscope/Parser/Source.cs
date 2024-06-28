@@ -11,9 +11,14 @@ internal sealed class Source(string? path, string contents)
     public string? Path { get; } = path;
 
     /// <summary>
+    /// The source's contents.
+    /// </summary>
+    public string Contents { get; set; } = contents;
+
+    /// <summary>
     /// Returns the character at some offset in the source.
     /// </summary>
-    public char this[int offset] => contents[offset];
+    public char this[int offset] => Contents[offset];
 
     /// <summary>
     /// Returns the contents covered by some range in the source.
@@ -23,15 +28,15 @@ internal sealed class Source(string? path, string contents)
     /// <summary>
     /// Returns the source's length.
     /// </summary>
-    public int Length => contents.Length;
+    public int Length => Contents.Length;
 
-    internal ReadOnlySpan<char> this[int start, int end]
+    internal string this[int start, int end]
     {
         get
         {
-            var offset = Math.Max(0, Math.Min(start, contents.Length));
-            var length = Math.Min(end, contents.Length) - offset;
-            return contents.AsSpan().Slice(offset, length);
+            var offset = Math.Max(0, Math.Min(start, Contents.Length));
+            var length = Math.Min(end, Contents.Length) - offset;
+            return Contents.Substring(offset, length);
         }
     }
 }

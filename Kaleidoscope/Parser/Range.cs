@@ -5,7 +5,7 @@ namespace Kaleidoscope.Parser;
 /// </summary>
 /// <param name="Start">The range's start location.</param>
 /// <param name="End">The range's end location.</param>
-public sealed record Range(Location Start, Location End)
+internal sealed record Range(Location Start, Location End)
 {
     public override string ToString() => $"{Start}..{End}";
 }

@@ -1,12 +1,12 @@
 ﻿using Kaleidoscope.Parser;
 
-var source = new Source(null, "def f(x, y)\n  x + y\nf(1, 3.5)");
-
-var lexer = new Lexer(source);
-
-var token = lexer.Next();
-while (token != null)
+var parser = new Parser();
+try
 {
-    Console.WriteLine($"{source[token.Value.Range]} at {token.Value.Range}");
-    token = lexer.Next();
+    var result = parser.ParseItem("1.337 * 4 < 42 - 3 * 4");
+    Console.WriteLine($"{result}");
+}
+catch (ParseException e)
+{
+    Console.WriteLine(e.Message);
 }

@@ -55,7 +55,7 @@ internal sealed class Lexer(Source source)
             case var nextChar when char.IsDigit(nextChar):
                 Consume(char.IsDigit);
 
-                if (source[_offset] == '.')
+                if (_offset < source.Length && source[_offset] == '.')
                 {
                     Advance(1);
                 }
@@ -85,7 +85,18 @@ internal sealed class Lexer(Source source)
     }
 
     /// <summary>
-    /// Advance the lexer's position in the source by some offset.
+    /// Resets the lexer back to the start of the source.
+    /// </summary>
+    public void Reset()
+    {
+        _line = 1;
+        _column = 1;
+        _offset = 0;
+        _depleted = false;
+    }
+
+    /// <summary>
+    /// Advances the lexer's position in the source by some offset.
     /// </summary>
     private void Advance(int offset)
     {
@@ -113,7 +124,7 @@ internal sealed class Lexer(Source source)
     /// <summary>
     /// Consumes characters in the source as long as they satisfy some predicate and returns them in a span.
     /// </summary>
-    private ReadOnlySpan<char> Consume(Predicate<char> predicate)
+    private string Consume(Predicate<char> predicate)
     {
         var start = _offset;
 
