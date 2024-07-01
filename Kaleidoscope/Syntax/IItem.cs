@@ -5,6 +5,8 @@ namespace Kaleidoscope.Syntax;
 /// </summary>
 public interface IItem
 {
+    T Accept<T>(IItemVisitor<T> visitor);
+    
     /// <summary>
     /// The item's source range.
     /// </summary>

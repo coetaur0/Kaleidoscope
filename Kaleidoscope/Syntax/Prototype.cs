@@ -10,6 +10,11 @@ namespace Kaleidoscope.Syntax;
 /// <param name="Range">The prototype's source range.</param>
 public sealed record Prototype(string Name, List<string> Params, Range Range) : IItem
 {
+    public T Accept<T>(IItemVisitor<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
+
     public override string ToString()
     {
         var str = new StringBuilder($"{Name}(");

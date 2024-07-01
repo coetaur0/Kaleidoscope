@@ -8,5 +8,10 @@ namespace Kaleidoscope.Syntax;
 /// <param name="Range">The function's source range.</param>
 public sealed record Function(Prototype Prototype, IExpr Body, Range Range) : IItem
 {
+    public T Accept<T>(IItemVisitor<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
+
     public override string ToString() => $"def {Prototype} {Body}";
 }

@@ -22,6 +22,11 @@ public enum BinaryOp
 /// <param name="Range">The expression's source range.</param>
 public sealed record BinaryExpr(BinaryOp Op, IExpr Lhs, IExpr Rhs, Range Range) : IExpr
 {
+    public T Accept<T>(IExprVisitor<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
+
     public override string ToString()
     {
         var str = new StringBuilder($"({Lhs} ");

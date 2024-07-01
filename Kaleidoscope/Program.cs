@@ -1,12 +1,15 @@
-﻿using Kaleidoscope.Parser;
+﻿using Kaleidoscope.Codegen;
+using Kaleidoscope.Parser;
 
-var parser = new Parser();
 try
 {
-    var result = parser.ParseItem("def f(x, y) x + y * 4");
-    Console.WriteLine($"{result}");
+    var parser = new Parser();
+    var ast = parser.ParseItem("def f(x, y) x + y * 4");
+    var codegen = new LlvmCodegen();
+    ast.Accept(codegen);
+    Console.WriteLine($"{codegen.Module.PrintToString()}");
 }
-catch (ParseException e)
+catch (Exception e)
 {
     Console.WriteLine(e.Message);
 }

@@ -1,5 +1,4 @@
 using Kaleidoscope.Syntax;
-using Range = Kaleidoscope.Syntax.Range;
 
 namespace Kaleidoscope.Parser;
 
@@ -67,7 +66,7 @@ public sealed class Parser
         Advance();
         var prototype = ParsePrototype();
         var body = ParseExpr();
-        return new Function(prototype, body, new Range(prototype.Range.Start, body.Range.End));
+        return new Function(prototype, body, new Syntax.Range(prototype.Range.Start, body.Range.End));
     }
 
     /// <summary>
@@ -141,7 +140,7 @@ public sealed class Parser
                 rhs = ParseBinary(rhs, opPrecedence + 1);
             }
 
-            lhs = new BinaryExpr(op, lhs, rhs, new Range(lhs.Range.Start, rhs.Range.End));
+            lhs = new BinaryExpr(op, lhs, rhs, new Syntax.Range(lhs.Range.Start, rhs.Range.End));
         }
     }
 
@@ -167,7 +166,7 @@ public sealed class Parser
                 return expr;
 
             default:
-                throw new ParseException($"Syntax error at {_nextToken.Range}: expect an expression.");
+                throw Exception("expect an expression", _nextToken.Range);
         }
     }
 
@@ -242,6 +241,14 @@ public sealed class Parser
             return Advance();
         }
 
-        throw new ParseException($"Syntax error at {_nextToken.Range}: {message}.");
+        throw Exception(message, _nextToken.Range);
+    }
+
+    /// <summary>
+    /// Creates a new parse exception with a given message and source range.
+    /// </summary>
+    private static ParseException Exception(string message, Syntax.Range range)
+    {
+        return new ParseException($"Syntax error at {range}: {message}.");
     }
 }
