@@ -19,7 +19,8 @@ public enum BinaryOp
 /// <param name="Op">The expression's operator.</param>
 /// <param name="Lhs">The expression's left-hand side.</param>
 /// <param name="Rhs">The expression's right-hand side.</param>
-public sealed record BinaryExpr(BinaryOp Op, IExpr Lhs, IExpr Rhs) : IExpr
+/// <param name="Range">The expression's source range.</param>
+public sealed record BinaryExpr(BinaryOp Op, IExpr Lhs, IExpr Rhs, Range Range) : IExpr
 {
     public override string ToString()
     {

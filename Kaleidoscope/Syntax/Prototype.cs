@@ -7,7 +7,8 @@ namespace Kaleidoscope.Syntax;
 /// </summary>
 /// <param name="Name">The function's name.</param>
 /// <param name="Params">The function's parameter names.</param>
-public sealed record Prototype(string Name, List<string> Params) : IItem
+/// <param name="Range">The prototype's source range.</param>
+public sealed record Prototype(string Name, List<string> Params, Range Range) : IItem
 {
     public override string ToString()
     {

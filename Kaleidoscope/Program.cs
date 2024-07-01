@@ -3,7 +3,7 @@
 var parser = new Parser();
 try
 {
-    var result = parser.ParseItem("1.337 * 4 < 42 - 3 * 4");
+    var result = parser.ParseItem("def f(x, y) x + y * 4");
     Console.WriteLine($"{result}");
 }
 catch (ParseException e)

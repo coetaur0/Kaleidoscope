@@ -3,13 +3,8 @@ namespace Kaleidoscope.Parser;
 /// <summary>
 /// A source of code.
 /// </summary>
-internal sealed class Source(string? path, string contents)
+internal sealed class Source(string contents)
 {
-    /// <summary>
-    /// The path to the source, if it was loaded from a file.
-    /// </summary>
-    public string? Path { get; } = path;
-
     /// <summary>
     /// The source's contents.
     /// </summary>
@@ -23,14 +18,12 @@ internal sealed class Source(string? path, string contents)
     /// <summary>
     /// Returns the contents covered by some range in the source.
     /// </summary>
-    public string this[Range range] => this[range.Start.Offset, range.End.Offset].ToString();
+    public string this[Syntax.Range range] => this[range.Start.Offset, range.End.Offset];
 
     /// <summary>
-    /// Returns the source's length.
+    /// Returns the contents of the source between two bounds.
     /// </summary>
-    public int Length => Contents.Length;
-
-    internal string this[int start, int end]
+    public string this[int start, int end]
     {
         get
         {
@@ -39,4 +32,9 @@ internal sealed class Source(string? path, string contents)
             return Contents.Substring(offset, length);
         }
     }
+
+    /// <summary>
+    /// Returns the source's length.
+    /// </summary>
+    public int Length => Contents.Length;
 }

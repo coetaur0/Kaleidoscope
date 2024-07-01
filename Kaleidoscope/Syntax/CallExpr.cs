@@ -7,7 +7,8 @@ namespace Kaleidoscope.Syntax;
 /// </summary>
 /// <param name="Callee">The expression's callee.</param>
 /// <param name="Args">The expression's arguments.</param>
-public sealed record CallExpr(string Callee, List<IExpr> Args) : IExpr
+/// <param name="Range">The expression's source range.</param>
+public sealed record CallExpr(string Callee, List<IExpr> Args, Range Range) : IExpr
 {
     public override string ToString()
     {

@@ -1,3 +1,5 @@
+using Kaleidoscope.Syntax;
+
 namespace Kaleidoscope.Parser;
 
 /// <summary>
@@ -12,6 +14,17 @@ internal sealed class Lexer(Source source)
     private int _offset;
 
     private bool _depleted;
+
+    /// <summary>
+    /// Resets the lexer back to the start of the source.
+    /// </summary>
+    public void Reset()
+    {
+        _line = 1;
+        _column = 1;
+        _offset = 0;
+        _depleted = false;
+    }
 
     /// <summary>
     /// Returns the next token in the source, or null if all of its token have already been consumed.
@@ -29,7 +42,7 @@ internal sealed class Lexer(Source source)
         if (_offset >= source.Length)
         {
             _depleted = true;
-            return new Token(TokenKind.Eof, new Range(start, start));
+            return new Token(TokenKind.Eof, new Syntax.Range(start, start));
         }
 
         TokenKind kind;
@@ -81,18 +94,7 @@ internal sealed class Lexer(Source source)
                 break;
         }
 
-        return new Token(kind, new Range(start, new Location(_line, _column, _offset)));
-    }
-
-    /// <summary>
-    /// Resets the lexer back to the start of the source.
-    /// </summary>
-    public void Reset()
-    {
-        _line = 1;
-        _column = 1;
-        _offset = 0;
-        _depleted = false;
+        return new Token(kind, new Syntax.Range(start, new Location(_line, _column, _offset)));
     }
 
     /// <summary>
@@ -122,7 +124,7 @@ internal sealed class Lexer(Source source)
     }
 
     /// <summary>
-    /// Consumes characters in the source as long as they satisfy some predicate and returns them in a span.
+    /// Consumes characters in the source as long as they satisfy some predicate and returns them.
     /// </summary>
     private string Consume(Predicate<char> predicate)
     {

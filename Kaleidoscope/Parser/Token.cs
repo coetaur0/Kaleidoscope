@@ -25,4 +25,4 @@ internal enum TokenKind
 /// </summary>
 /// <param name="Kind">The token's kind.</param>
 /// <param name="Range">The token's source range.</param>
-internal readonly record struct Token(TokenKind Kind, Range Range);
+internal readonly record struct Token(TokenKind Kind, Syntax.Range Range);
