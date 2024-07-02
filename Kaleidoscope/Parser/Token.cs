@@ -7,6 +7,9 @@ internal enum TokenKind
 {
     Def,
     Extern,
+    If,
+    Then,
+    Else,
     Identifier,
     Number,
     Less,

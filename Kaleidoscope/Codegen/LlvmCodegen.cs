@@ -85,6 +85,41 @@ public sealed class LlvmCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
         return function;
     }
 
+    public LLVMValueRef Visit(IfExpr expr)
+    {
+        var cond = expr.Condition.Accept(this);
+        var condValue = _builder.BuildFCmp(LLVMRealPredicate.LLVMRealONE, cond,
+            LLVMValueRef.CreateConstReal(LLVMTypeRef.Double, 0.0), "ifcond");
+
+        var function = _builder.InsertBlock.Parent;
+        var thenBlock = function.AppendBasicBlock("then");
+        var elseBlock = function.AppendBasicBlock("else");
+        var mergeBlock = function.AppendBasicBlock("ifcont");
+        _builder.BuildCondBr(condValue, thenBlock, elseBlock);
+
+        _builder.PositionAtEnd(thenBlock);
+        var thenValue = expr.Then.Accept(this);
+        thenBlock = _builder.InsertBlock;
+
+        _builder.PositionAtEnd(elseBlock);
+        var elseValue = expr.Else.Accept(this);
+        elseBlock = _builder.InsertBlock;
+
+        _builder.PositionAtEnd(mergeBlock);
+        var phiNode = _builder.BuildPhi(LLVMTypeRef.Double, "iftmp");
+        phiNode.AddIncoming([thenValue], [thenBlock], 1u);
+        phiNode.AddIncoming([elseValue], [elseBlock], 1u);
+
+        _builder.PositionAtEnd(thenBlock);
+        _builder.BuildBr(mergeBlock);
+
+        _builder.PositionAtEnd(elseBlock);
+        _builder.BuildBr(mergeBlock);
+
+        _builder.PositionAtEnd(mergeBlock);
+        return phiNode;
+    }
+
     public LLVMValueRef Visit(BinaryExpr expr)
     {
         var lhsValue = expr.Lhs.Accept(this);

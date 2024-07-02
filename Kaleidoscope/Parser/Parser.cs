@@ -1,4 +1,5 @@
 using Kaleidoscope.Syntax;
+using Range = Kaleidoscope.Syntax.Range;
 
 namespace Kaleidoscope.Parser;
 
@@ -152,6 +153,15 @@ public sealed class Parser
     {
         switch (_nextToken.Kind)
         {
+            case TokenKind.If:
+                Advance();
+                var condition = ParseExpr();
+                Consume(TokenKind.Then, "expect the 'then' keyword");
+                var then = ParseExpr();
+                Consume(TokenKind.Else, "expect the 'else' keyword");
+                var els = ParseExpr();
+                return new IfExpr(condition, then, els, new Range(condition.Range.Start, els.Range.End));
+
             case TokenKind.Identifier:
                 return ParseIdentifier();
 

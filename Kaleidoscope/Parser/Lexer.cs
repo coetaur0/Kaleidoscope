@@ -50,18 +50,15 @@ internal sealed class Lexer(Source source)
         {
             case var nextChar when char.IsLetter(nextChar):
                 var symbol = Consume(c => char.IsLetter(c) || char.IsDigit(c) || c == '_');
-                if (symbol == "def")
+                kind = symbol switch
                 {
-                    kind = TokenKind.Def;
-                }
-                else if (symbol == "extern")
-                {
-                    kind = TokenKind.Extern;
-                }
-                else
-                {
-                    kind = TokenKind.Identifier;
-                }
+                    "def" => TokenKind.Def,
+                    "extern" => TokenKind.Extern,
+                    "if" => TokenKind.If,
+                    "then" => TokenKind.Then,
+                    "else" => TokenKind.Else,
+                    _ => TokenKind.Identifier
+                };
 
                 break;
 

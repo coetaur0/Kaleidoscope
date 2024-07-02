@@ -6,6 +6,11 @@ namespace Kaleidoscope.Syntax;
 public interface IExprVisitor<out T>
 {
     /// <summary>
+    /// Visits a conditional expression.
+    /// </summary>
+    T Visit(IfExpr expr);
+
+    /// <summary>
     /// Visits a binary expression node.
     /// </summary>
     T Visit(BinaryExpr expr);
