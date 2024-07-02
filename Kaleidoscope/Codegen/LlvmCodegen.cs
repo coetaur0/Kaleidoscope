@@ -15,12 +15,22 @@ public sealed class LlvmCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
 
     private LLVMBuilderRef _builder;
 
+    private LLVMPassManagerRef _passManager;
+
     private readonly Dictionary<string, LLVMValueRef> _variables;
 
     public LlvmCodegen()
     {
         Module = LLVMModuleRef.CreateWithName("kaleidoscope");
         _builder = Module.Context.CreateBuilder();
+        _passManager = Module.CreateFunctionPassManager();
+        _passManager.AddBasicAliasAnalysisPass();
+        _passManager.AddPromoteMemoryToRegisterPass();
+        _passManager.AddInstructionCombiningPass();
+        _passManager.AddReassociatePass();
+        _passManager.AddGVNPass();
+        _passManager.AddCFGSimplificationPass();
+        _passManager.InitializeFunctionPassManager();
         _variables = new Dictionary<string, LLVMValueRef>();
     }
 
@@ -52,6 +62,8 @@ public sealed class LlvmCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
         _builder.BuildRet(returnValue);
 
         function.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+
+        _passManager.RunFunctionPassManager(function);
 
         return function;
     }

@@ -1,9 +1,15 @@
 ﻿using Kaleidoscope.Codegen;
 using Kaleidoscope.Parser;
 using Kaleidoscope.Syntax;
+using LLVMSharp.Interop;
 
 var parser = new Parser();
 var codegen = new LlvmCodegen();
+
+LLVM.LinkInMCJIT();
+LLVM.InitializeNativeTarget();
+var interpreter = codegen.Module.CreateInterpreter();
+
 while (true)
 {
     Console.Write("> ");
@@ -17,11 +23,14 @@ while (true)
     {
         var ast = parser.ParseItem(input);
         var ir = ast.Accept(codegen);
-        Console.WriteLine(ir.ToString());
+        Console.WriteLine($"LLVM IR:\n{ir.ToString()}");
 
         switch (ast)
         {
             case Function { Prototype.Name: "__anon_expr" }:
+                var function = codegen.Module.GetNamedFunction("__anon_expr");
+                var result = interpreter.RunFunction(ir, Array.Empty<LLVMGenericValueRef>());
+                Console.WriteLine($"Result: {LLVMTypeRef.Double.GenericValueToFloat(result)}");
                 ir.DeleteFunction();
                 break;
         }
