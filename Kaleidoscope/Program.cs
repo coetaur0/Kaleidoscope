@@ -1,15 +1,35 @@
 ﻿using Kaleidoscope.Codegen;
 using Kaleidoscope.Parser;
+using Kaleidoscope.Syntax;
 
-try
+var parser = new Parser();
+var codegen = new LlvmCodegen();
+while (true)
 {
-    var parser = new Parser();
-    var ast = parser.ParseItem("def f(x, y) x + y * 4");
-    var codegen = new LlvmCodegen();
-    ast.Accept(codegen);
-    Console.WriteLine($"{codegen.Module.PrintToString()}");
+    Console.Write("> ");
+    var input = Console.ReadLine();
+    if (input is null or "")
+    {
+        break;
+    }
+
+    try
+    {
+        var ast = parser.ParseItem(input);
+        var ir = ast.Accept(codegen);
+        Console.WriteLine(ir.ToString());
+
+        switch (ast)
+        {
+            case Function { Prototype.Name: "__anon_expr" }:
+                ir.DeleteFunction();
+                break;
+        }
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+    }
 }
-catch (Exception e)
-{
-    Console.WriteLine(e.Message);
-}
+
+Console.WriteLine(codegen.Module.ToString());

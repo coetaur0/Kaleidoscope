@@ -33,6 +33,11 @@ public sealed class LlvmCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
             function = item.Prototype.Accept(this);
         }
 
+        if (function.BasicBlocksCount != 0)
+        {
+            throw Exception($"invalid redefinition of function {item.Prototype.Name}", item.Range);
+        }
+
         var block = function.AppendBasicBlock("entry");
         _builder.PositionAtEnd(block);
 
@@ -46,22 +51,17 @@ public sealed class LlvmCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
         var returnValue = item.Body.Accept(this);
         _builder.BuildRet(returnValue);
 
+        function.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+
         return function;
     }
 
     public LLVMValueRef Visit(Prototype item)
     {
-        var function = Module.GetNamedFunction(item.Name);
-
-        if (item.Name != "__anon_expr" && function.Handle != IntPtr.Zero)
-        {
-            throw Exception($"invalid redefinition of function {item.Name}", item.Range);
-        }
-
         var functionType = LLVMTypeRef.CreateFunction(LLVMTypeRef.Double,
             Enumerable.Repeat(LLVMTypeRef.Double, item.Params.Count).ToArray());
 
-        function = Module.AddFunction(item.Name, functionType);
+        var function = Module.AddFunction(item.Name, functionType);
         function.Linkage = LLVMLinkage.LLVMExternalLinkage;
 
         for (var i = 0; i < item.Params.Count; i++)
