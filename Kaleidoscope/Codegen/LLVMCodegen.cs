@@ -6,7 +6,7 @@ namespace Kaleidoscope.Codegen;
 /// <summary>
 /// An LLVM code generator for the Kaleidoscope language. 
 /// </summary>
-public sealed class LlvmCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMValueRef>
+public sealed class LLVMCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMValueRef>
 {
     /// <summary>
     /// The LLVM module produced by codegen.
@@ -19,7 +19,7 @@ public sealed class LlvmCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
 
     private readonly Dictionary<string, LLVMValueRef> _variables;
 
-    public LlvmCodegen()
+    public LLVMCodegen()
     {
         Module = LLVMModuleRef.CreateWithName("kaleidoscope");
         _builder = Module.Context.CreateBuilder();

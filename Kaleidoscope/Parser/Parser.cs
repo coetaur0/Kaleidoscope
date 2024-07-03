@@ -1,5 +1,4 @@
 using Kaleidoscope.Syntax;
-using Range = Kaleidoscope.Syntax.Range;
 
 namespace Kaleidoscope.Parser;
 
@@ -64,10 +63,10 @@ public sealed class Parser
     /// </summary>
     private Function ParseDefinition()
     {
-        Advance();
+        var start = Advance().Range.Start;
         var prototype = ParsePrototype();
         var body = ParseExpr();
-        return new Function(prototype, body, new Syntax.Range(prototype.Range.Start, body.Range.End));
+        return new Function(prototype, body, new Syntax.Range(start, body.Range.End));
     }
 
     /// <summary>
@@ -160,7 +159,7 @@ public sealed class Parser
                 var then = ParseExpr();
                 Consume(TokenKind.Else, "expect the 'else' keyword");
                 var els = ParseExpr();
-                return new IfExpr(condition, then, els, new Range(condition.Range.Start, els.Range.End));
+                return new IfExpr(condition, then, els, new Syntax.Range(condition.Range.Start, els.Range.End));
 
             case TokenKind.Identifier:
                 return ParseIdentifier();
