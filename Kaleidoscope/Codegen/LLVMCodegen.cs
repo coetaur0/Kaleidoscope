@@ -120,6 +120,11 @@ public sealed class LLVMCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
         return phiNode;
     }
 
+    public LLVMValueRef Visit(ForExpr expr)
+    {
+        throw new NotImplementedException();
+    }
+
     public LLVMValueRef Visit(BinaryExpr expr)
     {
         var lhsValue = expr.Lhs.Accept(this);

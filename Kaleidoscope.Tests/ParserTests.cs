@@ -65,6 +65,28 @@ public sealed class ParserTests
     }
 
     [Fact]
+    public void ParseForExpr()
+    {
+        var expr = _parser.ParseItem("for i = 0, i < 5, 1 in print(i)");
+        Assert.Equal("def __anon_expr() for i = 0, (i < 5), 1 in print(i)", expr.ToString());
+        expr = _parser.ParseItem("for i = 0, i < 5 in print(i)");
+        Assert.Equal("def __anon_expr() for i = 0, (i < 5), 1 in print(i)", expr.ToString());
+
+        var exception = Assert.Throws<ParseException>(
+            () => _parser.ParseItem("for i 0, i < 5, 1 in print(i)")
+        );
+        Assert.Equal("Syntax error at 1:7..1:8: expect a '='.", exception.Message);
+        exception = Assert.Throws<ParseException>(
+            () => _parser.ParseItem("for i = 0, in print(i)")
+        );
+        Assert.Equal("Syntax error at 1:12..1:14: expect an expression.", exception.Message);
+        exception = Assert.Throws<ParseException>(
+            () => _parser.ParseItem("for i = 0, i < 5, 1 print(i)")
+        );
+        Assert.Equal("Syntax error at 1:21..1:26: expect the 'in' keyword.", exception.Message);
+    }
+
+    [Fact]
     public void ParseBinaryExpr()
     {
         var expr = _parser.ParseItem("x + 3 * y - 1 < 42");

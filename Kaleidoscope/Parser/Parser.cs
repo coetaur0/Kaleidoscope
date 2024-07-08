@@ -1,4 +1,5 @@
 using Kaleidoscope.Syntax;
+using Range = Kaleidoscope.Syntax.Range;
 
 namespace Kaleidoscope.Parser;
 
@@ -153,13 +154,32 @@ public sealed class Parser
         switch (_nextToken.Kind)
         {
             case TokenKind.If:
-                Advance();
+                var ifStart = Advance().Range.Start;
                 var condition = ParseExpr();
                 Consume(TokenKind.Then, "expect the 'then' keyword");
                 var then = ParseExpr();
                 Consume(TokenKind.Else, "expect the 'else' keyword");
                 var els = ParseExpr();
-                return new IfExpr(condition, then, els, new Syntax.Range(condition.Range.Start, els.Range.End));
+                return new IfExpr(condition, then, els, els.Range with { Start = ifStart });
+
+            case TokenKind.For:
+                var forStart = Advance().Range.Start;
+                var varName = _source[Consume(TokenKind.Identifier, "expect a variable name").Range];
+                Consume(TokenKind.Equal, "expect a '='");
+                var start = ParseExpr();
+                Consume(TokenKind.Comma, "expect a ','");
+                var end = ParseExpr();
+
+                IExpr step = new NumberExpr(1, _nextToken.Range);
+                if (_nextToken.Kind == TokenKind.Comma)
+                {
+                    Advance();
+                    step = ParseExpr();
+                }
+
+                Consume(TokenKind.In, "expect the 'in' keyword");
+                var body = ParseExpr();
+                return new ForExpr(varName, start, end, step, body, body.Range with { Start = forStart });
 
             case TokenKind.Identifier:
                 return ParseIdentifier();

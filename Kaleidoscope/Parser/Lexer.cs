@@ -57,6 +57,8 @@ internal sealed class Lexer(Source source)
                     "if" => TokenKind.If,
                     "then" => TokenKind.Then,
                     "else" => TokenKind.Else,
+                    "for" => TokenKind.For,
+                    "in" => TokenKind.In,
                     _ => TokenKind.Identifier
                 };
 
@@ -78,6 +80,7 @@ internal sealed class Lexer(Source source)
             default:
                 kind = source[_offset] switch
                 {
+                    '=' => TokenKind.Equal,
                     '<' => TokenKind.Less,
                     '+' => TokenKind.Plus,
                     '-' => TokenKind.Minus,
