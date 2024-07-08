@@ -122,7 +122,41 @@ public sealed class LLVMCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
 
     public LLVMValueRef Visit(ForExpr expr)
     {
-        throw new NotImplementedException();
+        var start = expr.Start.Accept(this);
+        var preHeader = _builder.InsertBlock;
+        var function = preHeader.Parent;
+        var loopBlock = function.AppendBasicBlock("loop");
+        _builder.BuildBr(loopBlock);
+
+        _builder.PositionAtEnd(loopBlock);
+        var variable = _builder.BuildPhi(LLVMTypeRef.Double, expr.VarName);
+        variable.AddIncoming([start], [preHeader], 1u);
+        _variables.TryGetValue(expr.VarName, out var oldValue);
+        _variables[expr.VarName] = variable;
+        expr.Body.Accept(this);
+
+        var step = expr.Step.Accept(this);
+        var nextVar = _builder.BuildFAdd(variable, step, "nextvar");
+        var endCond = expr.End.Accept(this);
+        var zero = LLVMValueRef.CreateConstReal(LLVMTypeRef.Double, 0);
+        endCond = _builder.BuildFCmp(LLVMRealPredicate.LLVMRealONE, endCond, zero, "loopcond");
+
+        var loopEnd = _builder.InsertBlock;
+        var afterBlock = function.AppendBasicBlock("afterloop");
+        _builder.BuildCondBr(endCond, loopBlock, afterBlock);
+        _builder.PositionAtEnd(afterBlock);
+        variable.AddIncoming([nextVar], [loopEnd], 1u);
+
+        if (oldValue.Handle != IntPtr.Zero)
+        {
+            _variables[expr.VarName] = oldValue;
+        }
+        else
+        {
+            _variables.Remove(expr.VarName);
+        }
+
+        return zero;
     }
 
     public LLVMValueRef Visit(BinaryExpr expr)
