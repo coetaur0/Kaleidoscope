@@ -1,4 +1,4 @@
-﻿using Kaleidoscope.Interpreter;
+﻿using Kaleidoscope;
 
 var interpreter = new Interpreter();
 
@@ -20,7 +20,7 @@ while (true)
             Console.WriteLine($"Result: {result}");
         }
     }
-    catch (InterpreterException e)
+    catch (Exception e)
     {
         Console.WriteLine(e.Message);
     }

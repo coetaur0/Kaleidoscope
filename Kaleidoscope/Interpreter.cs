@@ -1,9 +1,8 @@
 using Kaleidoscope.Codegen;
-using Kaleidoscope.Parser;
 using Kaleidoscope.Syntax;
 using LLVMSharp.Interop;
 
-namespace Kaleidoscope.Interpreter;
+namespace Kaleidoscope;
 
 /// <summary>
 /// An interpreter for Kaleidoscope programs.
@@ -47,25 +46,18 @@ public sealed class Interpreter
                 case Function { Prototype.Name: "__anon_expr" }:
                     var value = _engine.RunFunction(ir, Array.Empty<LLVMGenericValueRef>());
                     result = LLVMTypeRef.Double.GenericValueToFloat(value);
-                    ir.DeleteFunction();
                     break;
             }
 
             return (code, result);
         }
-        catch (ParseException e)
-        {
-            throw new InterpreterException(e.Message);
-        }
-        catch (CodegenException e)
+        finally
         {
             var function = Module.GetNamedFunction("__anon_expr");
             if (function.Handle != IntPtr.Zero)
             {
                 function.DeleteFunction();
             }
-
-            throw new InterpreterException(e.Message);
         }
     }
 }
