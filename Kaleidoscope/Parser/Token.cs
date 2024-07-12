@@ -12,18 +12,15 @@ internal enum TokenKind
     Else,
     For,
     In,
+    Binary,
+    Unary,
     Identifier,
     Number,
-    Equal,
-    Less,
-    Plus,
-    Minus,
-    Times,
+    Op,
     LeftParen,
     RightParen,
     Comma,
-    Eof,
-    Unknown
+    Eof
 }
 
 /// <summary>

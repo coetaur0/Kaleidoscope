@@ -166,17 +166,25 @@ public sealed class LLVMCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
 
         switch (expr.Op)
         {
-            case BinaryOp.LessThan:
+            case "<":
                 var result = _builder.BuildFCmp(LLVMRealPredicate.LLVMRealOLT, lhsValue, rhsValue, "cmptmp");
                 return _builder.BuildUIToFP(result, LLVMTypeRef.Double, "booltmp");
-            case BinaryOp.Add:
+            case "+":
                 return _builder.BuildFAdd(lhsValue, rhsValue, "tmpadd");
-            case BinaryOp.Subtract:
+            case "-":
                 return _builder.BuildFSub(lhsValue, rhsValue, "tmpsub");
-            case BinaryOp.Multiply:
+            case "*":
                 return _builder.BuildFMul(lhsValue, rhsValue, "tmpmul");
             default:
-                throw Exception("unknown operator", expr.Range);
+                var function = Module.GetNamedFunction($"binary{expr.Op}");
+                if (function.Handle == IntPtr.Zero)
+                {
+                    throw Exception("unknown operator referenced", expr.Range);
+                }
+
+                var functionType = LLVMTypeRef.CreateFunction(LLVMTypeRef.Double,
+                    Enumerable.Repeat(LLVMTypeRef.Double, 2).ToArray());
+                return _builder.BuildCall2(functionType, function, new[] { lhsValue, rhsValue }, "binop");
         }
     }
 

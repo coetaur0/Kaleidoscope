@@ -1,5 +1,4 @@
 using Kaleidoscope.Syntax;
-using Range = Kaleidoscope.Syntax.Range;
 
 namespace Kaleidoscope.Parser;
 
@@ -8,16 +7,12 @@ namespace Kaleidoscope.Parser;
 /// </summary>
 public sealed class Parser
 {
-    /// <summary>
-    /// Returns the binary operator and precedence level associated with some token kind.
-    /// </summary>
-    private static (BinaryOp, int) Precedence(TokenKind kind) => kind switch
+    private readonly Dictionary<string, int> _precedence = new()
     {
-        TokenKind.Less => (BinaryOp.LessThan, 1),
-        TokenKind.Plus => (BinaryOp.Add, 2),
-        TokenKind.Minus => (BinaryOp.Subtract, 2),
-        TokenKind.Times => (BinaryOp.Multiply, 3),
-        _ => (BinaryOp.Multiply, -1)
+        ["<"] = 10,
+        ["+"] = 20,
+        ["-"] = 20,
+        ["*"] = 30
     };
 
     private readonly Source _source;
@@ -85,7 +80,7 @@ public sealed class Parser
     private Function ParseTopLevelExpr()
     {
         var body = ParseExpr();
-        return new Function(new Prototype("__anon_expr", [], body.Range), body, body.Range);
+        return new Function(new Prototype("__anon_expr", [], false, 40, body.Range), body, body.Range);
     }
 
     /// <summary>
@@ -93,13 +88,47 @@ public sealed class Parser
     /// </summary>
     private Prototype ParsePrototype()
     {
-        var name = Consume(TokenKind.Identifier, "expect a function name");
+        var start = _nextToken.Range;
+        var precedence = 30;
 
-        Consume(TokenKind.LeftParen, "expect a '('");
+        string name;
+        int kind;
+        switch (_nextToken.Kind)
+        {
+            case TokenKind.Identifier:
+                Advance();
+                name = _source[start];
+                kind = 0;
+                break;
+
+            case TokenKind.Binary:
+                Advance();
+                var op = Consume(TokenKind.Op, "expect a binary operator").Range;
+                name = $"binary{_source[op]}";
+                kind = 2;
+                if (_nextToken.Kind == TokenKind.Number)
+                {
+                    precedence = Convert.ToInt32(_source[Advance().Range]);
+                }
+
+                _precedence[_source[op]] = precedence;
+
+                break;
+
+            default:
+                throw Exception("expect a function or operator declaration", _nextToken.Range);
+        }
+
+        var paramStart = Consume(TokenKind.LeftParen, "expect a '('").Range.Start;
         var parameters = ParseList(ParseParameter, TokenKind.RightParen);
         var end = Consume(TokenKind.RightParen, "expect a ')'").Range.End;
 
-        return new Prototype(_source[name.Range], parameters, name.Range with { End = end });
+        if (kind == 2 && parameters.Count != 2)
+        {
+            throw Exception("invalid number of operands for operator", new Syntax.Range(paramStart, end));
+        }
+
+        return new Prototype(name, parameters, kind != 0, precedence, start with { End = end });
     }
 
     /// <summary>
@@ -126,16 +155,16 @@ public sealed class Parser
     {
         while (true)
         {
-            var (op, opPrecedence) = Precedence(_nextToken.Kind);
+            var opPrecedence = _precedence.GetValueOrDefault(_source[_nextToken.Range], -1);
             if (opPrecedence < precedence)
             {
                 return lhs;
             }
 
-            Advance();
+            var op = _source[Advance().Range];
             var rhs = ParsePrimary();
 
-            var (_, nextPrecedence) = Precedence(_nextToken.Kind);
+            var nextPrecedence = _precedence.GetValueOrDefault(_source[_nextToken.Range], -1);
             if (opPrecedence < nextPrecedence)
             {
                 rhs = ParseBinary(rhs, opPrecedence + 1);
@@ -165,7 +194,12 @@ public sealed class Parser
             case TokenKind.For:
                 var forStart = Advance().Range.Start;
                 var varName = _source[Consume(TokenKind.Identifier, "expect a variable name").Range];
-                Consume(TokenKind.Equal, "expect a '='");
+                if (_nextToken.Kind != TokenKind.Op && _source[_nextToken.Range] != "=")
+                {
+                    throw Exception("expect a '='", _nextToken.Range);
+                }
+
+                Advance();
                 var start = ParseExpr();
                 Consume(TokenKind.Comma, "expect a ','");
                 var end = ParseExpr();

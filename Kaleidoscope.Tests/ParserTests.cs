@@ -17,7 +17,7 @@ public sealed class ParserTests
         var exception = Assert.Throws<ParseException>(
             () => _parser.ParseItem("def (x y) x + y")
         );
-        Assert.Equal("Syntax error at 1:5..1:6: expect a function name.", exception.Message);
+        Assert.Equal("Syntax error at 1:5..1:6: expect a function or operator declaration.", exception.Message);
         exception = Assert.Throws<ParseException>(
             () => _parser.ParseItem("def f(x y) x + y")
         );
@@ -30,6 +30,18 @@ public sealed class ParserTests
             () => _parser.ParseItem("def f(x, y)")
         );
         Assert.Equal("Syntax error at 1:12..1:12: expect an expression.", exception.Message);
+    }
+
+    [Fact]
+    public void ParseBinaryOp()
+    {
+        var function = _parser.ParseItem("def binary$ 20 (a, b) a + b");
+        Assert.Equal("def binary$ 20 (a, b) (a + b)", function.ToString());
+
+        var exception = Assert.Throws<ParseException>(
+            () => _parser.ParseItem("def binary £ (x) x")
+        );
+        Assert.Equal("Syntax error at 1:14..1:17: invalid number of operands for operator.", exception.Message);
     }
 
     [Fact]

@@ -13,6 +13,10 @@ public sealed class InterpreterTests
         var (_, result) = interpreter.Run("fact(5)");
         Assert.Equal(120.0, result);
 
+        interpreter.Run("def binary$ 30 (x, y) x * y");
+        (_, result) = interpreter.Run("3 + 2 $ 4");
+        Assert.Equal(11.0, result);
+
         var exception = Assert.Throws<CodegenException>(
             () => interpreter.Run("def fact(x) x")
         );

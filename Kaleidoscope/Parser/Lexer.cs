@@ -59,6 +59,8 @@ internal sealed class Lexer(Source source)
                     "else" => TokenKind.Else,
                     "for" => TokenKind.For,
                     "in" => TokenKind.In,
+                    "binary" => TokenKind.Binary,
+                    "unary" => TokenKind.Unary,
                     _ => TokenKind.Identifier
                 };
 
@@ -80,15 +82,10 @@ internal sealed class Lexer(Source source)
             default:
                 kind = source[_offset] switch
                 {
-                    '=' => TokenKind.Equal,
-                    '<' => TokenKind.Less,
-                    '+' => TokenKind.Plus,
-                    '-' => TokenKind.Minus,
-                    '*' => TokenKind.Times,
                     '(' => TokenKind.LeftParen,
                     ')' => TokenKind.RightParen,
                     ',' => TokenKind.Comma,
-                    _ => TokenKind.Unknown
+                    _ => TokenKind.Op
                 };
                 Advance(1);
                 break;
