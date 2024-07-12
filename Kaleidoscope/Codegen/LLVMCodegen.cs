@@ -188,6 +188,19 @@ public sealed class LLVMCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
         }
     }
 
+    public LLVMValueRef Visit(UnaryExpr expr)
+    {
+        var operandValue = expr.Operand.Accept(this);
+        var function = Module.GetNamedFunction($"unary{expr.Op}");
+        if (function.Handle == IntPtr.Zero)
+        {
+            throw Exception("unknown operator referenced", expr.Range);
+        }
+
+        var functionType = LLVMTypeRef.CreateFunction(LLVMTypeRef.Double, [LLVMTypeRef.Double]);
+        return _builder.BuildCall2(functionType, function, new[] { operandValue }, "unop");
+    }
+
     public LLVMValueRef Visit(CallExpr expr)
     {
         var function = Module.GetNamedFunction(expr.Callee);

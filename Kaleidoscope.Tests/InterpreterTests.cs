@@ -17,6 +17,10 @@ public sealed class InterpreterTests
         (_, result) = interpreter.Run("3 + 2 $ 4");
         Assert.Equal(11.0, result);
 
+        interpreter.Run("def unary-(x) 0 - x");
+        (_, result) = interpreter.Run("-42");
+        Assert.Equal(-42.0, result);
+
         var exception = Assert.Throws<CodegenException>(
             () => interpreter.Run("def fact(x) x")
         );

@@ -45,6 +45,18 @@ public sealed class ParserTests
     }
 
     [Fact]
+    public void ParseUnaryOp()
+    {
+        var function = _parser.ParseItem("def unary-(v) 0 - v");
+        Assert.Equal("def unary-(v) (0 - v)", function.ToString());
+
+        var exception = Assert.Throws<ParseException>(
+            () => _parser.ParseItem("def unary£(x, y) y")
+        );
+        Assert.Equal("Syntax error at 1:11..1:17: invalid number of operands for operator.", exception.Message);
+    }
+
+    [Fact]
     public void ParseExtern()
     {
         var ext = _parser.ParseItem("extern f(x, y)");
@@ -108,6 +120,13 @@ public sealed class ParserTests
             () => _parser.ParseItem("x - 3 *")
         );
         Assert.Equal("Syntax error at 1:8..1:8: expect an expression.", exception.Message);
+    }
+
+    [Fact]
+    public void ParseUnaryExpr()
+    {
+        var expr = _parser.ParseItem("!!0");
+        Assert.Equal("def __anon_expr() !!0", expr.ToString());
     }
 
     [Fact]

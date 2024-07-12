@@ -103,16 +103,23 @@ public sealed class Parser
 
             case TokenKind.Binary:
                 Advance();
-                var op = Consume(TokenKind.Op, "expect a binary operator").Range;
-                name = $"binary{_source[op]}";
+                var binOp = Consume(TokenKind.Op, "expect a binary operator").Range;
+                name = $"binary{_source[binOp]}";
                 kind = 2;
                 if (_nextToken.Kind == TokenKind.Number)
                 {
                     precedence = Convert.ToInt32(_source[Advance().Range]);
                 }
 
-                _precedence[_source[op]] = precedence;
+                _precedence[_source[binOp]] = precedence;
 
+                break;
+
+            case TokenKind.Unary:
+                Advance();
+                var unOp = Consume(TokenKind.Op, "expect a unary operator").Range;
+                name = $"unary{_source[unOp]}";
+                kind = 1;
                 break;
 
             default:
@@ -123,7 +130,7 @@ public sealed class Parser
         var parameters = ParseList(ParseParameter, TokenKind.RightParen);
         var end = Consume(TokenKind.RightParen, "expect a ')'").Range.End;
 
-        if (kind == 2 && parameters.Count != 2)
+        if (kind != 0 && parameters.Count != kind)
         {
             throw Exception("invalid number of operands for operator", new Syntax.Range(paramStart, end));
         }
@@ -144,7 +151,7 @@ public sealed class Parser
     /// </summary>
     private IExpr ParseExpr()
     {
-        return ParseBinary(ParsePrimary(), 0);
+        return ParseBinary(ParseUnary(), 0);
     }
 
     /// <summary>
@@ -162,7 +169,7 @@ public sealed class Parser
             }
 
             var op = _source[Advance().Range];
-            var rhs = ParsePrimary();
+            var rhs = ParseUnary();
 
             var nextPrecedence = _precedence.GetValueOrDefault(_source[_nextToken.Range], -1);
             if (opPrecedence < nextPrecedence)
@@ -175,9 +182,24 @@ public sealed class Parser
     }
 
     /// <summary>
+    /// Parses a unary expression.
+    /// </summary>
+    private IExpr ParseUnary()
+    {
+        if (_nextToken.Kind != TokenKind.Op)
+        {
+            return ParsePrimary();
+        }
+
+        var start = Advance().Range;
+        var op = _source[start];
+        var operand = ParseUnary();
+        return new UnaryExpr(op, operand, operand.Range with { Start = start.Start });
+    }
+
+    /// <summary>
     /// Parses a primary expression.
     /// </summary>
-    /// <returns></returns>
     private IExpr ParsePrimary()
     {
         switch (_nextToken.Kind)

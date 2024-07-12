@@ -21,6 +21,11 @@ public interface IExprVisitor<out T>
     T Visit(BinaryExpr expr);
 
     /// <summary>
+    /// Visits a unary expression node.
+    /// </summary>
+    T Visit(UnaryExpr expr);
+
+    /// <summary>
     /// Visits a call expression node.
     /// </summary>
     T Visit(CallExpr expr);
