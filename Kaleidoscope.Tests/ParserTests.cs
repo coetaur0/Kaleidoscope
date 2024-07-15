@@ -111,6 +111,13 @@ public sealed class ParserTests
     }
 
     [Fact]
+    public void ParseVarInExpr()
+    {
+        var expr = _parser.ParseItem("var x = 0 in x = 3");
+        Assert.Equal("def __anon_expr() var x = 0 in (x = 3)", expr.ToString());
+    }
+
+    [Fact]
     public void ParseBinaryExpr()
     {
         var expr = _parser.ParseItem("x + 3 * y - 1 < 42");

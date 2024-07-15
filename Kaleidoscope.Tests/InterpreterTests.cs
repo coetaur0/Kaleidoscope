@@ -9,9 +9,15 @@ public sealed class InterpreterTests
     {
         var interpreter = new Interpreter();
         interpreter.Run("def fact(n) if n < 2 then n else n * fact(n - 1)");
+        interpreter.Run("def binary : 1 (x, y) y");
+        interpreter.Run(
+            "def fib(x) var a = 1 in var b = 1 in var c = 0 in (for i = 3, i < x in c = a + b : a = b : b = c) : b");
 
         var (_, result) = interpreter.Run("fact(5)");
         Assert.Equal(120.0, result);
+
+        (_, result) = interpreter.Run("fib(8)");
+        Assert.Equal(21.0, result);
 
         interpreter.Run("def binary$ 30 (x, y) x * y");
         (_, result) = interpreter.Run("3 + 2 $ 4");

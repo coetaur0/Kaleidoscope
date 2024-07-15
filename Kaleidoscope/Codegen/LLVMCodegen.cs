@@ -55,7 +55,11 @@ public sealed class LLVMCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
         for (var i = 0; i < item.Prototype.Params.Count; i++)
         {
             var param = function.GetParam((uint)i);
-            _variables[item.Prototype.Params[i]] = param;
+            var paramName = item.Prototype.Params[i];
+            param.Name = paramName;
+            var alloca = _builder.BuildAlloca(LLVMTypeRef.Double, paramName);
+            _builder.BuildStore(param, alloca);
+            _variables[paramName] = alloca;
         }
 
         var returnValue = item.Body.Accept(this);
@@ -122,31 +126,29 @@ public sealed class LLVMCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
 
     public LLVMValueRef Visit(ForExpr expr)
     {
+        var function = _builder.InsertBlock.Parent;
+        var alloca = _builder.BuildAlloca(LLVMTypeRef.Double, expr.VarName);
         var start = expr.Start.Accept(this);
-        var preHeader = _builder.InsertBlock;
-        var function = preHeader.Parent;
+        _builder.BuildStore(start, alloca);
+
         var loopBlock = function.AppendBasicBlock("loop");
         _builder.BuildBr(loopBlock);
-
         _builder.PositionAtEnd(loopBlock);
-        var variable = _builder.BuildPhi(LLVMTypeRef.Double, expr.VarName);
-        variable.AddIncoming([start], [preHeader], 1u);
         _variables.TryGetValue(expr.VarName, out var oldValue);
-        _variables[expr.VarName] = variable;
+        _variables[expr.VarName] = alloca;
         expr.Body.Accept(this);
 
         var step = expr.Step.Accept(this);
-        var nextVar = _builder.BuildFAdd(variable, step, "nextvar");
         var endCond = expr.End.Accept(this);
+        var currentVar = _builder.BuildLoad2(LLVMTypeRef.Double, alloca, expr.VarName);
+        var nextVar = _builder.BuildFAdd(currentVar, step, "nextvar");
+        _builder.BuildStore(nextVar, alloca);
         var zero = LLVMValueRef.CreateConstReal(LLVMTypeRef.Double, 0);
         endCond = _builder.BuildFCmp(LLVMRealPredicate.LLVMRealONE, endCond, zero, "loopcond");
 
-        var loopEnd = _builder.InsertBlock;
         var afterBlock = function.AppendBasicBlock("afterloop");
         _builder.BuildCondBr(endCond, loopBlock, afterBlock);
         _builder.PositionAtEnd(afterBlock);
-        variable.AddIncoming([nextVar], [loopEnd], 1u);
-
         if (oldValue.Handle != IntPtr.Zero)
         {
             _variables[expr.VarName] = oldValue;
@@ -159,8 +161,45 @@ public sealed class LLVMCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
         return zero;
     }
 
+    public LLVMValueRef Visit(VarInExpr expr)
+    {
+        var initVal = expr.Value.Accept(this);
+        var alloca = _builder.BuildAlloca(LLVMTypeRef.Double, expr.Name);
+        _builder.BuildStore(initVal, alloca);
+        _variables.TryGetValue(expr.Name, out var oldValue);
+        _variables[expr.Name] = alloca;
+        var body = expr.Body.Accept(this);
+        if (oldValue.Handle != IntPtr.Zero)
+        {
+            _variables[expr.Name] = oldValue;
+        }
+        else
+        {
+            _variables.Remove(expr.Name);
+        }
+
+        return body;
+    }
+
     public LLVMValueRef Visit(BinaryExpr expr)
     {
+        if (expr.Op == "=")
+        {
+            if (expr.Lhs is not VariableExpr target)
+            {
+                throw Exception("destination of '=' must be a variable", expr.Lhs.Range);
+            }
+
+            var value = expr.Rhs.Accept(this);
+            if (!_variables.TryGetValue(target.Name, out var variable))
+            {
+                throw Exception($"unknown variable {target.Name}", expr.Range);
+            }
+
+            _builder.BuildStore(value, variable);
+            return value;
+        }
+
         var lhsValue = expr.Lhs.Accept(this);
         var rhsValue = expr.Rhs.Accept(this);
 
@@ -234,7 +273,7 @@ public sealed class LLVMCodegen : IItemVisitor<LLVMValueRef>, IExprVisitor<LLVMV
             throw Exception($"unknown variable {expr.Name}", expr.Range);
         }
 
-        return value;
+        return _builder.BuildLoad2(LLVMTypeRef.Double, value, expr.Name);
     }
 
     private static CodegenException Exception(string message, Syntax.Range range)

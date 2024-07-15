@@ -12,6 +12,7 @@ internal enum TokenKind
     Else,
     For,
     In,
+    Var,
     Binary,
     Unary,
     Identifier,

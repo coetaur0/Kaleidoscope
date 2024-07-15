@@ -9,6 +9,7 @@ public sealed class Parser
 {
     private readonly Dictionary<string, int> _precedence = new()
     {
+        ["="] = 2,
         ["<"] = 10,
         ["+"] = 20,
         ["-"] = 20,
@@ -215,7 +216,7 @@ public sealed class Parser
 
             case TokenKind.For:
                 var forStart = Advance().Range.Start;
-                var varName = _source[Consume(TokenKind.Identifier, "expect a variable name").Range];
+                var forVarName = _source[Consume(TokenKind.Identifier, "expect a variable name").Range];
                 if (_nextToken.Kind != TokenKind.Op && _source[_nextToken.Range] != "=")
                 {
                     throw Exception("expect a '='", _nextToken.Range);
@@ -234,8 +235,22 @@ public sealed class Parser
                 }
 
                 Consume(TokenKind.In, "expect the 'in' keyword");
+                var forBody = ParseExpr();
+                return new ForExpr(forVarName, start, end, step, forBody, forBody.Range with { Start = forStart });
+
+            case TokenKind.Var:
+                var varStart = Advance().Range.Start;
+                var varName = _source[Consume(TokenKind.Identifier, "expect a variable name").Range];
+                if (_nextToken.Kind != TokenKind.Op && _source[_nextToken.Range] != "=")
+                {
+                    throw Exception("expect a '='", _nextToken.Range);
+                }
+
+                Advance();
+                var value = ParseExpr();
+                Consume(TokenKind.In, "expect the 'in' keyword");
                 var body = ParseExpr();
-                return new ForExpr(varName, start, end, step, body, body.Range with { Start = forStart });
+                return new VarInExpr(varName, value, body, body.Range with { Start = varStart });
 
             case TokenKind.Identifier:
                 return ParseIdentifier();

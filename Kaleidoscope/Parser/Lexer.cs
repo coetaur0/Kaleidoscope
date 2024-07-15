@@ -59,6 +59,7 @@ internal sealed class Lexer(Source source)
                     "else" => TokenKind.Else,
                     "for" => TokenKind.For,
                     "in" => TokenKind.In,
+                    "var" => TokenKind.Var,
                     "binary" => TokenKind.Binary,
                     "unary" => TokenKind.Unary,
                     _ => TokenKind.Identifier

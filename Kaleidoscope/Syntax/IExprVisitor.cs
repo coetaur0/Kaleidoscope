@@ -16,6 +16,11 @@ public interface IExprVisitor<out T>
     T Visit(ForExpr expr);
 
     /// <summary>
+    /// Visits a variable definition expression node.
+    /// </summary>
+    T Visit(VarInExpr expr);
+
+    /// <summary>
     /// Visits a binary expression node.
     /// </summary>
     T Visit(BinaryExpr expr);
