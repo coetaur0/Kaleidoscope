@@ -1,4 +1,4 @@
-# Kaleidoscope
+# Kaleidoscope.NET
 
 [![.NET](https://github.com/coetaur0/Kaleidoscope/actions/workflows/dotnet.yml/badge.svg)](https://github.com/coetaur0/Kaleidoscope/actions/workflows/dotnet.yml)
 
